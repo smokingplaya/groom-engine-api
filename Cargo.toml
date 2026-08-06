@@ -1,0 +1,16 @@
+[package]
+name = "groom-engine-api"
+version = "0.1.0"
+edition = "2024"
+build = "build.rs"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+atomicframework_api = { path = "../atomicframework_api", features=["debug"] }
+anyhow = "1.0.104"
+rglua = "3.0.0"
+paste = "1.0.15"
+retour = { version = "0.4.0-alpha.4", features = ["static-detour"] }
+viable = "0.2.0"
