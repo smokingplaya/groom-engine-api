@@ -1,6 +1,6 @@
 // ( ͡° ͜ʖ ͡°)
 use anyhow::{Context, Result};
-use atomicframework_api::{ptr_to_string, string_to_ptr};
+use atomicframework_api::{ptr_to_string, string_to_ptr, write_to_dumpfile};
 use retour::{StaticDetour, static_detour};
 use rglua::lua::LuaState;
 use std::{collections::HashMap, sync::{LazyLock, Mutex}};
@@ -88,7 +88,10 @@ fn dispatch_handler(this: *mut ConCommand, command: *mut CCommand) {
 }
 
 static_detour! {
+  // #[cfg(target_os="windows")]
   static ConCommandDispatchMethod: extern "C" fn(*mut ConCommand, *mut CCommand);
+  // #[cfg(not(target_os="windows"))]
+  // static ConCommandDispatchMethod: extern "thiscall" fn(*mut ConCommand, *mut CCommand);
 }
 
 // 1. get any console command instance (pointer to it) (because vtable is same for all instances)
@@ -106,6 +109,9 @@ pub fn detour() -> Result<()> {
   unsafe {
     let vptr = (*cmd).vtable as *const extern "C" fn (_this: *mut ConCommand, _cmd: *mut CCommand);
     // reading `ConCommand->vptr->dispatch` function
+    #[cfg(target_os="windows")]
+    let dispatch_func = vptr.add(14).read();
+    #[cfg(target_os="linux")]
     let dispatch_func = vptr.add(15).read();
 
     // (☞ ͡° ͜ʖ ͡°)☞
@@ -119,12 +125,12 @@ pub fn detour() -> Result<()> {
   Ok(())
 }
 
-// calls VEngineCvar007->find_command("clear")
+// calls VEngineCvar007->FindCommand("clear")
 //
 // returns ptr of concommand `clear` instance
 // why `clear`, not some other command?
-// because `clear` is default command that 100% would be exists
-// on game initialization, so basically we can use any command
+// because `clear` is default command that 100% would
+// exists on game initialization, so basically we can use any command
 fn get_cmd() -> Option<*mut ConCommand> {
   call_interface_function!(INTERFACE_VSTDLIB_CONVAR, find_command, string_to_ptr!("clear"))
 }

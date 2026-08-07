@@ -5,7 +5,7 @@ macro_rules! define_source_interface {
 			thread_local! {
 				pub static [<INTERFACE_ $n>]: std::cell::LazyCell<*mut $t> = std::cell::LazyCell::new(|| {
 			    use atomicframework_api::ErrorDump;
-					use rglua::cstr;
+					use rglua::{iface, cstr};
 
 					let instance = rglua::iface!($t);
 					if instance.is_err() {

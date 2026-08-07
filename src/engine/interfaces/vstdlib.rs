@@ -30,7 +30,9 @@ impl VstdlibConVar {
   }
 }
 
-// fix me : libvstdlib is linux only
+#[cfg(target_os = "windows")]
+define_source_interface!("vstdlib.dll", "VEngineCvar007", VstdlibConVar, VSTDLIB_CONVAR); // todo i'am here rn
+#[cfg(not(target_os = "windows"))]
 define_source_interface!("libvstdlib_client.so", "VEngineCvar007", VstdlibConVar, VSTDLIB_CONVAR); // todo i'am here rn
 
 // Reference
@@ -153,6 +155,7 @@ impl CCommand {
 	}
 }
 
+#[cfg(target_os="linux")]
 #[vtable]
 pub struct ConCommand {
   #[offset(7)]
@@ -164,5 +167,20 @@ pub struct ConCommand {
   #[offset(14)]
   pub can_auto_complete: extern "C" fn(cmd: *mut CCommand) -> bool,
   #[offset(15)]
+  pub dispatch: extern "C" fn(cmd: *mut CCommand)
+}
+
+#[cfg(target_os="windows")]
+#[vtable]
+pub struct ConCommand {
+  #[offset(6)]
+  pub get_name: extern "C" fn() -> *const i8,
+  #[offset(7)]
+  pub get_help_text: extern "C" fn() -> *const i8,
+  #[offset(12)]
+  pub auto_complete_suggest: extern "C" fn(cmd: *mut CCommand, partial: *const i8, commands: &CUtlVector<CUtlString>),
+  #[offset(13)]
+  pub can_auto_complete: extern "C" fn(cmd: *mut CCommand) -> bool,
+  #[offset(14)]
   pub dispatch: extern "C" fn(cmd: *mut CCommand)
 }

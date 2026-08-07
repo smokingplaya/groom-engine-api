@@ -40,7 +40,8 @@ pub struct LoggingContext {
 }
 
 #[allow(unused)]
-#[link(name = "tier0_client")]
+#[cfg_attr(target_os = "linux", link(name = "tier0_client"))]
+#[cfg_attr(target_os = "windows", link(name = "tier0"))]
 unsafe extern "C" {
   #[cfg(target_arch = "x86_64")]
   // pub fn LoggingSystem_RegisterLoggingListener(); // https://github.com/danielga/sourcesdk-minimal/blob/99cafecf352ef5e6af6b1dade2566a8680039152/public/tier0/logging.h#L720
